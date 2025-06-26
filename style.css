@@ -1,8 +1,9 @@
-* {
+/* * {
     border: 1px solid black;
-}
+} */
 .container {
     max-width: none;
     margin-top: 50px;
     text-align: center;
 }
+
