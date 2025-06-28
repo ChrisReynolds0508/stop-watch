@@ -7,3 +7,77 @@
     text-align: center;
 }
 
+.display.running {
+    color: limegreen;
+}
+
+.display.paused{
+    color: gold;
+}
+
+.display.reset{
+    color: crimson;
+}
+
+.display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+/*  Flip-card container  */
+.flip {
+  position: relative;
+  width: 90px;
+  height: 120px;
+  perspective: 600px;
+  display: inline-block;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  margin: 0 4px;
+}
+
+/*  Two halves  */
+.flip .upper, .flip .lower {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+  border: 2px solid #333;
+  background: #111;
+  color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+}
+
+#centis.flip {
+  width: 110px;      /* or 110px depending on your font */
+}
+
+
+/*  Top half  */
+.flip .upper { top: 0; border-bottom: none; }
+
+/*  Bottom half  */
+.flip .lower { bottom: 0; border-top: none; transform: rotateX(180deg); }
+
+/*  Animation pieces (added dynamically)  */
+.flip .upper.flip-out { animation: flipOut 0.4s forwards; }
+.flip .lower.flip-in  { animation: flipIn  0.4s forwards; }
+
+@keyframes flipOut {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(-90deg); }
+}
+@keyframes flipIn {
+  0%   { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+/*  Colon separator  */
+.sep { display:inline-block; font-size:4rem; padding:0 6px; }

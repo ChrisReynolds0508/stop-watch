@@ -4,8 +4,33 @@ document.body.appendChild(container);
 
 const display = document.createElement('div');
 display.classList.add('display');
-display.textContent = 'Time: 00:00:00:000';
+display.innerHTML = `
+  <div class="flip" id="hours"></div>
+  <div class="sep">:</div>
+  <div class="flip" id="minutes"></div>
+  <div class="sep">:</div>
+  <div class="flip" id="seconds"></div>
+  <div class="sep">:</div>
+  <div class="flip" id="centis"></div>
+`;
 container.appendChild(display);
+
+function buildCard(el) {
+  el.innerHTML = `
+    <div class="upper">00</div>
+    <div class="lower">00</div>
+  `;
+}
+
+// Immediately build cards once DOM elements exist
+['hours', 'minutes', 'seconds', 'centis'].forEach(id => {
+  const el = document.getElementById(id);
+  buildCard(el);
+});
+
+const centis = document.getElementById('centis');
+centis.querySelector('.upper').textContent = '000';
+centis.querySelector('.lower').textContent = '000';
 
 const startButton = document.createElement('button');
 startButton.classList.add('startButton');
@@ -66,27 +91,76 @@ const renderLaps = () => {
     
 }
 
+function flipTo(cardEl, newValue) {
+  const currentVal = cardEl.querySelector('.upper').textContent;
+  if (currentVal === newValue) return;          // no change → no animation
+
+  const upper = cardEl.querySelector('.upper');
+  const lower = cardEl.querySelector('.lower');
+
+  // Create temp clones for animation
+  const upperClone = upper.cloneNode(true);
+  const lowerClone = lower.cloneNode(true);
+
+  upperClone.textContent = currentVal;
+  lowerClone.textContent = newValue;
+
+  upperClone.classList.add('flip-out');
+  lowerClone.classList.add('flip-in');
+
+  // Insert clones
+  cardEl.appendChild(upperClone);
+  cardEl.appendChild(lowerClone);
+
+  // Clean up after animation ends
+  upperClone.addEventListener('animationend', () => {
+    upper.textContent = newValue;
+    upperClone.remove();
+  });
+  lowerClone.addEventListener('animationend', () => {
+    lower.textContent = newValue;
+    lowerClone.remove();
+  });
+}
+
+
+
 const start = () => {
    startButton.addEventListener('click', () => {
     if(!timerStarted){
         timerStarted = true;
+        display.classList.remove('paused', 'reset');
+display.classList.add('running');
+
         lapButton.disabled = false;
         startTime = Date.now();
 
         interval = setInterval(() => {
             const currentElapsed = Date.now() - startTime;
             const totalTime = totalElapsed + currentElapsed;
-            display.textContent = `Time: ${formatTime(totalTime)}`
+            const h  = String(Math.floor(totalTime / 3600000)).padStart(2, '0');
+const m  = String(Math.floor((totalTime % 3600000) / 60000)).padStart(2, '0');
+const s  = String(Math.floor((totalTime % 60000) / 1000)).padStart(2, '0');
+const ms = String(Math.floor(totalTime % 1000)).padStart(3, '0'); // ← full milliseconds
+ 
+
+flipTo(document.getElementById('hours'),   h);
+flipTo(document.getElementById('minutes'), m);
+flipTo(document.getElementById('seconds'), s);
+flipTo(document.getElementById('centis'),  ms);
+
         }, 10)
     }    
    })
 }
 
-
 stopButton.addEventListener('click', () => {
     if(timerStarted){
     clearInterval(interval);
     timerStarted = false;
+    display.classList.remove('running');
+display.classList.add('paused');
+
     lapButton.disabled = true;
     totalElapsed += Date.now() - startTime;
     }
@@ -95,9 +169,20 @@ stopButton.addEventListener('click', () => {
 resetButton.addEventListener('click', () => {
     clearInterval(interval);
     timerStarted = false;
+    display.classList.remove('running', 'paused');
+display.classList.add('reset');
+
     lapButton.disabled = true;
      totalElapsed = 0;
-    display.textContent = 'Time: 00:00:00:000';
+   ['hours','minutes','seconds','centis'].forEach(id => {
+  const card = document.getElementById(id);
+  card.querySelector('.upper').textContent = '00';
+  card.querySelector('.lower').textContent = '00';
+  const centis = document.getElementById('centis');
+centis.querySelector('.upper').textContent = '000';
+centis.querySelector('.lower').textContent = '000';
+});
+
 
     laps = [];
     renderLaps();    // empties the visible list
@@ -126,7 +211,7 @@ lapButton.addEventListener('click', () => {
             }
             if(key === 'l' && timerStarted){
                 lapButton.click();
-                
+
             }
         })
 
